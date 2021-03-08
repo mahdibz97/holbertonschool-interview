@@ -6,15 +6,19 @@
 
 def canUnlockAll(boxes):
     """can unlock all boxes"""
-    newlist = []
-    k = len(boxes)
-    for i in boxes:
-        if len(i) == 0 and i is not boxes[k-1]:
-            return False
-        for j in i:
-            newlist.append(j)
-    for index, keys in enumerate(boxes):
-        if index in newlist or index < k-1:
-            return True
-        else:
-            return False
+    index = boxes[0]
+    for i in range(1, len(boxes)):
+        if i in index:
+            index += boxes[i]
+    for i in range(1, len(boxes)):
+        if i in index:
+            index += boxes[i]
+    list(set(index))
+    key = 1
+    for i in range(1, len(boxes)-1):
+        if i not in index:
+            key = 0
+    if key == 1:
+        return True
+    else:
+        return False
