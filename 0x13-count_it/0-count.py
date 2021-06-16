@@ -1,49 +1,38 @@
 #!/usr/bin/python3
-"""
-a recursive function that queries the Reddit API,
-parses the title of all hot articles,
-and prints a sorted count of given keywords
-"""
+"""recursive function that queries the Reddit API"""
 import requests
 
 
-def count_words(subreddit, word_list):
-    """
-    a recursive function that queries the Reddit API,
-    parses the title of all hot articles,
-    and prints a sorted count of given keywords
-    """
-    r = requests.get('https://www.reddit.com/r/{}/hot/.json'.format(subreddit),
-                     headers={'User-agent': 'Chrome'})
-    data = {}
-    titles = []
-    counts = {}
-    for word in word_list:
-        if word not in counts:
-            counts[word] = 0
-    if r.status_code == 200:
-        children = r.json().get('data').get('children')
-        for item in children:
-            titles.append(item.get('data').get('title'))
-        for title in titles:
-            for k, v in counts.items():
-                copy = title[:]
-                cut = copy.lower().split(k.lower())
-                counts[k] += len(cut) - 1
-        duplicates = {}
-        for k in counts:
-            if counts[k] == 0:
-                pass
-            elif k.lower() in duplicates:
-                duplicates[k.lower()] += counts[k]
-            else:
-                duplicates[k.lower()] = counts[k]
-        sorted_values = sorted(duplicates.values(), reverse=True)
-        sorted_dict = {}
-
-        for i in sorted_values:
-            for k in duplicates.keys():
-                if duplicates[k] == i:
-                    sorted_dict[k] = duplicates[k]
-        for i in sorted_dict.keys():
-            print("{}: {}".format(i, sorted_dict[i]))
+def count_words(subreddit, list, after="", count={}):
+    """recursive function that queries the Reddit API"""
+    if after is None:
+        return []
+    url = 'https://www.reddit.com/r/{}/hot.json'.format(subreddit)
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)\
+                AppleWebKit/537.36 (KHTML, like Gecko)Chrome/70.0.3538.7\
+                7 Safari/537.36'}
+    if after:
+        url += '?after={}'.format(after)
+    r = requests.get(url, headers=headers, allow_redirects=False)
+    if str(r) != '<Response [200]>':
+        return None
+    data = r.json().get('data')
+    after = data.get('after')
+    list_underlist = data.get('children')
+    for under_list in list_underlist:
+        title = under_list.get('data').get('title')
+        for mot in list:
+            occ = title.lower().split().count(mot.lower())
+            if occ > 0:
+                if mot in count:
+                    count[mot] += occ
+                else:
+                    count[mot] = occ
+    if after is None:
+        if not len(count) > 0:
+            return
+        it = sorted(count.items(), key=lambda kv: (-kv[1], kv[0]))
+        for key, value in it:
+            print('{}: {}'.format(key.lower(), value))
+    else:
+        return count_words(subreddit, list, after, count)
