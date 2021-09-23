@@ -1,55 +1,58 @@
 #!/usr/bin/python3
-"""Prime Game"""
+"""
+Prime Game
+"""
 
 
-def isprime(n):
-    """determine if a number is prime"""
-    for i in range(2, n):
-        if n % i == 0:
+def prims(n, primes):
+    """
+    Returns calculated primes
+    """
+    primers = primes[-1]
+    if n > primers:
+        for i in range(primers + 1, n + 1):
+            if is_prime(i):
+                primes.append(i)
+            else:
+                primes.append(0)
+
+
+def is_prime(n):
+    """
+    Checks if a number n is a prime number
+    """
+    for i in range(2, int(n ** 0.5) + 1):
+        if not n % i:
             return False
     return True
 
 
-def delete_numbers(n, num):
-    """removing that number and its multiples"""
-    for i in range(len(num)):
-        if num[i] % n == 0:
-            num[i] = 0
-
-
 def isWinner(x, nums):
-    """Prime Game"""
+    """
+    Returns: player that won most rounds otherwise None
+    """
     if not nums or x < 1:
         return None
 
-    Maria = 0
-    Ben = 0
-    for i in range(x):
-        turn = 0
-        num = list(range(1, nums[i]+1))
+    wins = {"Maria": 0, "Ben": 0}
+    primes = [0, 0, 2]
+    prims(max(nums), primes)
 
-        while True:
-            change = False
+    for round in range(x):
+        sums = sum((i != 0 and i <= nums[round])for i in primes[
+            :nums[round] + 1])
 
-            for k, n in enumerate(num):
-                if n > 1 and isprime(n):
-                    delete_numbers(n, num)
-                    change = True
-                    turn += 1
-                    break
-
-            if change is False:
-                break
-
-        if turn % 2 != 0:
-            Maria += 1
+        if (sums % 2):
+            winner = "Maria"
         else:
-            Ben += 1
+            winner = "Ben"
 
-    if Maria < Ben:
-        return "Ben"
+        if winner:
+            wins[winner] += 1
 
-    if Maria > Ben:
+    if wins["Maria"] > wins["Ben"]:
         return "Maria"
-
-    return None
+    elif wins["Ben"] > wins["Maria"]:
+        return "Ben"
+    else:
+        return None
